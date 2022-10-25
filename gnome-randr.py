@@ -67,6 +67,15 @@ def has_scale(scale, mode):
         if s == scale:
             return s
 
+def nearest_scale(scale, mode):
+    last = 0
+    for s in mode[5]:
+        if s == scale:
+            return s
+        if abs(s - scale) < abs(last - scale):
+            last = s
+    return last
+
 def mode_props_to_str(props):
     str = ''
     if 'is-current' in props:
@@ -126,16 +135,18 @@ def bool_to_str(b):
 def rot_to_trans(r):
     return {
         'normal': 0,
-        'inverted': 6,
+        'inverted': 2,
+        'flipped': 6,
         'left': 1,
         'right': 3
     }.get(r, 0)
 
 def trans_to_rot(t):
-    assert(t in [0, 6, 1, 3])
+    assert(t in [0, 2, 6, 1, 3])
     return {
         0: 'normal',
-        6: 'inverted',
+        2: 'inverted',
+        6: 'flipped',
         1: 'left',
         3: 'right'
     }.get(t)
@@ -583,11 +594,10 @@ class ConfigInfo:
         if conf['res'] == 'off':
             return
 
-        if has_scale(scale, conf['mode-info']):
-            conf['scale'] = scale
-        else:
-            warn('scale {} not available for output {}@{}'
-                  .format(scale, output, conf['res']))
+        conf['scale'] = nearest_scale(scale, conf['mode-info'])
+        if conf['scale'] != scale:
+            warn('scale {} not available for output {}@{}; using {}'
+                  .format(scale, output, conf['res'], conf['scale']))
 
     def output_set_rate(self, output, rate):
         conf = self.output_config[output]
@@ -851,3 +861,4 @@ if not requested_actions.dry_run and config_info.config_changed(new_lm):
                                  requested_actions.config_method, new_lm, {})
 else:
     print('no changes made')
+

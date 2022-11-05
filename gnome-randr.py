@@ -388,8 +388,8 @@ def monmap_to_lm(config_info, monmap):
                 mode = conf['mode-info']
             mode_id = mode[0]
             # use the conf values which accounts for rotation
-            w = conf['w']
-            h = conf['h']
+            w = round(conf['w'] / conf['scale'])
+            h = round(conf['h'] / conf['scale'])
 
             x = y_info[col_idx][0]
             y = y_info[col_idx][2]
